@@ -1,0 +1,26 @@
+{
+  "name": "caffeinate-hold",
+  "version": "0.1.0",
+  "description": "DSH (DeepSeek Harness) host plugin: keeps macOS awake via caffeinate while any agent or background job is running, and releases it when everything is idle.",
+  "main": "caffeinate-hold.js",
+  "files": [
+    "caffeinate-hold.js",
+    "README.md"
+  ],
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cordis",
+    "plugin",
+    "caffeinate",
+    "macos",
+    "sleep-prevention"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
