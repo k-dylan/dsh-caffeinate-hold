@@ -17,6 +17,14 @@
     "sleep-prevention"
   ],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/k-dylan/dsh-caffeinate-hold.git"
+  },
+  "homepage": "https://github.com/k-dylan/dsh-caffeinate-hold",
+  "bugs": {
+    "url": "https://github.com/k-dylan/dsh-caffeinate-hold/issues"
+  },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
   },
