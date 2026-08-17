@@ -17,12 +17,17 @@
 
 module.exports = {
   name: 'caffeinate-hold',
+  // 声明所需服务：Loader 会等服务就绪后再启动本插件
+  // （各 bundle 条目并发加载，不声明 inject 可能先于服务提供者 apply，
+  //   导致 ctx.get 全部为 undefined 而静默失效）
+  inject: ['subprocess', 'jobs', 'agents'],
 
   apply(ctx) {
     // 可选服务：缺失时插件静默失效（例如非 macOS 或未挂载对应服务）
     const subprocess = ctx.get('subprocess')
     const jobs = ctx.get('jobs')
     const agentsSvc = ctx.get('agents')
+    console.log(`[caffeinate-hold] apply: subprocess=${subprocess !== undefined} jobs=${jobs !== undefined} agents=${agentsSvc !== undefined}`)
     if (subprocess === undefined || jobs === undefined) return
 
     // caffeinate 参数：-i 阻止空闲休眠（macOS 专用，电池/AC 均有效）
@@ -90,7 +95,9 @@ module.exports = {
     }
 
     const refresh = () => {
-      if (running.size > 0 || activeJobs() > 0) startCaffeinate()
+      const n = activeJobs()
+      console.log(`[caffeinate-hold] refresh: running=${running.size} jobs=${n} -> ${running.size > 0 || n > 0 ? 'start' : 'stop'}`)
+      if (running.size > 0 || n > 0) startCaffeinate()
       else stopCaffeinate()
     }
 
@@ -113,13 +120,17 @@ module.exports = {
       refresh()
     })
     ctx.on('agent/status', (payload) => {
+      console.log(`[caffeinate-hold] agent/status: ${payload.agent.id} -> ${payload.status}`)
       const id = payload.agent.id
       if (!agents.has(id)) agents.set(id, payload.agent)
       if (payload.status === 'running') running.add(id)
       else running.delete(id)
       refresh()
     })
-    ctx.effect(() => jobs.onJobsChanged(() => refresh()))
+    ctx.effect(() => jobs.onJobsChanged(() => {
+      console.log('[caffeinate-hold] jobs changed')
+      refresh()
+    }))
 
     refresh()
 
