@@ -27,7 +27,6 @@ module.exports = {
     const subprocess = ctx.get('subprocess')
     const jobs = ctx.get('jobs')
     const agentsSvc = ctx.get('agents')
-    console.log(`[caffeinate-hold] apply: subprocess=${subprocess !== undefined} jobs=${jobs !== undefined} agents=${agentsSvc !== undefined}`)
     if (subprocess === undefined || jobs === undefined) return
 
     // caffeinate 参数：-i 阻止空闲休眠（macOS 专用，电池/AC 均有效）
@@ -95,9 +94,7 @@ module.exports = {
     }
 
     const refresh = () => {
-      const n = activeJobs()
-      console.log(`[caffeinate-hold] refresh: running=${running.size} jobs=${n} -> ${running.size > 0 || n > 0 ? 'start' : 'stop'}`)
-      if (running.size > 0 || n > 0) startCaffeinate()
+      if (running.size > 0 || activeJobs() > 0) startCaffeinate()
       else stopCaffeinate()
     }
 
@@ -120,17 +117,13 @@ module.exports = {
       refresh()
     })
     ctx.on('agent/status', (payload) => {
-      console.log(`[caffeinate-hold] agent/status: ${payload.agent.id} -> ${payload.status}`)
       const id = payload.agent.id
       if (!agents.has(id)) agents.set(id, payload.agent)
       if (payload.status === 'running') running.add(id)
       else running.delete(id)
       refresh()
     })
-    ctx.effect(() => jobs.onJobsChanged(() => {
-      console.log('[caffeinate-hold] jobs changed')
-      refresh()
-    }))
+    ctx.effect(() => jobs.onJobsChanged(() => refresh()))
 
     refresh()
 

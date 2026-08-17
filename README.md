@@ -77,3 +77,7 @@ dsh web --dump-config | grep caffeinate
 
 - 仅适用于 macOS（`caffeinate` 为系统自带命令）；其他平台插件会报错一次并自动失效，不影响 Harness 运行。
 - 本目录位于 DSH 安装之外，升级 DSH 不会覆盖或删除插件。
+
+## 开发者备注
+
+插件通过 `inject: ['subprocess', 'jobs', 'agents']` 声明所需服务：DSH 的各 loader 条目**并发加载**，激活靠服务可用性驱动，若不声明 inject，插件可能先于服务提供者执行 apply 而拿不到服务（`ctx.get` 返回 undefined）导致静默失效。开发自己的 DSH 插件时请务必声明依赖服务。
